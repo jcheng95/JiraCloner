@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+     <link rel="stylesheet" href="//aui-cdn.atlassian.com/aui-adg/5.9.12/css/aui.min.css" media="all">
+ </head>
+ <body>
+    <!-- Will need to be modified to be stylized for a WebItem -->
+     <!--<section id="content" class="ac-content">
+         <div class="aui-page-header">
+             <div class="aui-page-header-main">
+                 <h1>Hello World</h1>
+             </div>
+         </div>
+     </section> -->
+
+     <script id="connect-loader" data-options="sizeToParent:true;">
+        /*  Self-execution
+            This is accomplished by doing the following:
+            (function(){
+            ......... // Code
+            }();)
+         */
+         (function() {
+            var issueLinkJql = '';
+            var epicLinkJql = '';
+            var issueKey = '';
+
+            var runJqlQuery = function() {
+                AP.require('request', function(request) {
+                request({
+                    url: '/rest/api/latest/search?jql=' + encodeURIComponent(searchJql),
+                    success: function(response) {
+                        // convert the string response to JSON
+                        response = JSON.parse(response);
+
+                        // dump out the response to the console
+                        console.log(response);
+                    },
+                    error: function() {
+                        console.log(arguments);
+                    }    
+                });
+                });
+            };
+
+            // Gets an issue (it's really creating the clone).
+            var getIssueData = function() {
+                /*var issueData = {
+                  "fields": {
+                    "project": { 
+                      "key": "TEST"
+                    },
+                    "summary": "REST ye merry gentlemen.",
+                    "description": "Creating of an issue using project keys and issue type names using the REST API",
+                    "issuetype": {
+                      "name": "Task"
+                    }
+                  }
+                };*/
+                AP.require('request', function(request) {
+                    request({
+                        url: '/rest/api/latest/issue' + issueKey,
+                        // adjust to a POST instead of a GET
+                        type: 'GET',
+                        data: JSON.stringify(issueData),
+                        success: function(response) {
+                            // convert the string response to JSON
+                            // Can obtain the new issue key from the response body <- search the "key" key
+                            response = JSON.parse(response);
+
+                            return response;
+
+                            // dump out the response to the console
+                            console.log(response);
+                        },
+                        error: function() {
+                            console.log(arguments);
+                        },
+                        // inform the server what type of data is in the body of the HTTP POST
+                        //contentType: "application/json"    
+                    });
+                });
+            };
+
+            // Creates a "new" issue (it's really creating the clone).
+            var createNewIssue = function(issueData) {
+                /*var issueData = {
+                  "fields": {
+                    "project": { 
+                      "key": "TEST"
+                    },
+                    "summary": "REST ye merry gentlemen.",
+                    "description": "Creating of an issue using project keys and issue type names using the REST API",
+                    "issuetype": {
+                      "name": "Task"
+                    }
+                  }
+                };*/
+                AP.require('request', function(request) {
+                    request({
+                        url: '/rest/api/latest/issue',
+                        // adjust to a POST instead of a GET
+                        type: 'POST',
+                        data: JSON.stringify(issueData),
+                        success: function(response) {
+                            // convert the string response to JSON
+                            // Can obtain the new issue key from the response body <- search the "key" key
+                            response = JSON.parse(response);
+
+                            // dump out the response to the console
+                            console.log(response);
+                        },
+                        error: function() {
+                            console.log(arguments);
+                        },
+                        // inform the server what type of data is in the body of the HTTP POST
+                        contentType: "application/json"    
+                    });
+                });
+            };
+
+            // Function used to call all other functions to perform the recursive clone
+            var recursiveClone() {
+
+            };
+
+             // Function to grab the context parameters | function is anonymous so it is usually not accessible after its initial creation
+             var getUrlParam = function (param) {
+                 var codedParam = (new RegExp(param + '=([^&]*)')).exec(window.location.search)[1];
+                 return decodeURIComponent(codedParam);
+             };
+
+             // xdm_e is the context parameter for the host application's base URL and cp is the context path of the instance
+             var baseUrl = getUrlParam('xdm_e') + getUrlParam('cp');
+             var options = document.getElementById('connect-loader').getAttribute('data-options');
+
+             var script = document.createElement("script");
+             script.src = baseUrl + '/atlassian-connect/all.js';
+
+             if(options) {
+                 script.setAttribute('data-options', options);
+             }
+
+             document.getElementsByTagName("head")[0].appendChild(script);
+         })();
+     </script>
+
+ </body>
+</html>

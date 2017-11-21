@@ -1,0 +1,25 @@
+{
+    "name": "Recursive Cloner",
+    "description": "Atlassian Connect app for recursively cloning issues (but specifically an epic).",
+    "key": "recursive-clone",
+    "baseUrl": "http://localhost:8000",
+    "vendor": {
+        "name": "N/A",
+        "url": "https://www.github.com/jcheng95"
+    },
+    "authentication": {
+        "type": "none"
+    },
+    "modules": {
+        "webItems": [
+            {
+                "url": "/index.html",
+                "key": "recursive-clone-issue-creator",
+                "location": "operations-operations",
+                "name": {
+                    "value": "Recursive Epic Cloner"
+                }
+            }
+        ]
+    }
+}
