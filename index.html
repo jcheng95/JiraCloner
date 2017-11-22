@@ -1,101 +1,127 @@
 <!DOCTYPE html>
 <html lang="en">
- <head>
-     <link rel="stylesheet" href="//aui-cdn.atlassian.com/aui-adg/5.9.12/css/aui.min.css" media="all">
- </head>
- <body>
+<head>
+    <link rel="stylesheet" href="//aui-cdn.atlassian.com/aui-adg/5.9.12/css/aui.min.css" media="all">
+</head>
+<body>
     <!-- Will need to be modified to be stylized for a WebItem -->
-     <!--<section id="content" class="ac-content">
-         <div class="aui-page-header">
-             <div class="aui-page-header-main">
-                 <h1>Hello World</h1>
-             </div>
-         </div>
-     </section> -->
+    <!--<section id="content" class="ac-content">
+        <div class="aui-page-header">
+            <div class="aui-page-header-main">
+                <h1>Hello World</h1>
+            </div>
+        </div>
+    </section> -->
 
-     <script id="connect-loader" data-options="sizeToParent:true;">
+    <script id="connect-loader" data-options="sizeToParent:true;">
         /*  Self-execution
             This is accomplished by doing the following:
             (function(){
             ......... // Code
             }();)
-         */
-         (function() {
+        */
+        (function() {
             var issueLinkJql = '';
             var epicLinkJql = '';
             var issueKey = '';
-
-            var runJqlQuery = function() {
+			var parentKey = '';
+			
+			// Used as a "visited" map
+			var issuesDict = {};
+			// Used as a stack for all issues on a particular level
+			var neighborStack = [];
+			
+			// Manages query responses
+			var handleQueryResponse = function(result) {
+				// This might be pointless in the future
+				if(!(result.key in issueDict)) {
+					issueDict[result.key] = false;
+				}
+				// Push to the stack for visiting later
+				for(var issue = 0; issue < result["issues"].length; issue++) {
+					neighborStack.push(issue.key);
+				}
+			};
+			
+			/*
+			The success runs a callback function so the response is asynchronous meaning that the following format will be needed when you run the function runJqlQuery:
+			runJqlQuery(query, function(queryResponse) {dataManipulationFunction(queryResponse);});
+			*/
+            var runJqlQuery = function(searchJql, callback) {
+				// Deprecated usage is contended by different sources
                 AP.require('request', function(request) {
-                request({
-                    url: '/rest/api/latest/search?jql=' + encodeURIComponent(searchJql),
-                    success: function(response) {
-                        // convert the string response to JSON
-                        response = JSON.parse(response);
-
-                        // dump out the response to the console
-                        console.log(response);
-                    },
-                    error: function() {
-                        console.log(arguments);
-                    }    
-                });
+					request({
+						url: '/rest/api/latest/search?jql=' + encodeURIComponent(searchJql),
+						success: function(response) {
+							// convert the string response to JSON
+							response = JSON.parse(response);
+							
+							// Manipulate response body to get data for all of the keys from this list
+							callback(response);
+							// dump out the response to the console
+							console.log(response);
+						},
+						error: function() {
+							console.log(arguments);
+						}    
+					});
                 });
             };
 
-            // Gets an issue (it's really creating the clone).
-            var getIssueData = function() {
-                /*var issueData = {
-                  "fields": {
-                    "project": { 
-                      "key": "TEST"
-                    },
-                    "summary": "REST ye merry gentlemen.",
-                    "description": "Creating of an issue using project keys and issue type names using the REST API",
-                    "issuetype": {
-                      "name": "Task"
-                    }
-                  }
-                };*/
+			// Manipulates the metadata for usage in the recursive function
+			var handleIssueData = function(result) {
+				/*var field = result["fields"];
+				var summary = result["summary"];
+				var description = result["description"];
+				var issueType = result["issuetype"];*/
+				
+				// Grab the important metadata for creating a new issue
+				var inputJson = {};
+				inputJson["fields"] = result["fields"];
+				inputJson["summary"] = result["summary"];
+				inputJson["description"] = result["description"];
+				inputJson["issuetype"] = result["issuetype"];
+				
+				// Returns a JSON of the metadata
+				return inputJson;
+			};
+			
+			/*
+			The success runs a callback function so the response is asynchronous meaning that the following format will be needed when you run the function runJqlQuery:
+			runJqlQuery(query, function(queryResponse) {dataManipulationFunction(queryResponse);});
+			*/
+            // Gets an issue.
+            var getIssueData = function(key, callback) {
+				// Deprecated usage is contended by different sources
                 AP.require('request', function(request) {
                     request({
-                        url: '/rest/api/latest/issue' + issueKey,
-                        // adjust to a POST instead of a GET
+                        url: '/rest/api/latest/issue/' + encodeURIComponent(issueKey),
                         type: 'GET',
                         data: JSON.stringify(issueData),
                         success: function(response) {
                             // convert the string response to JSON
-                            // Can obtain the new issue key from the response body <- search the "key" key
                             response = JSON.parse(response);
-
-                            return response;
-
+							
+							callback(response);
                             // dump out the response to the console
                             console.log(response);
                         },
                         error: function() {
                             console.log(arguments);
-                        },
-                        // inform the server what type of data is in the body of the HTTP POST
-                        //contentType: "application/json"    
+                        }
                     });
                 });
             };
+			
+			// Grabs the new issue key from the created issue and adds it to the visited dictionaries
+			var handleIssueCreator = function(result) {
+				issueData[result.key] = false;
+				// parentKey = result.key;
+			};
 
             // Creates a "new" issue (it's really creating the clone).
-            var createNewIssue = function(issueData) {
-                /*var issueData = {
-                  "fields": {
-                    "project": { 
-                      "key": "TEST"
-                    },
-                    "summary": "REST ye merry gentlemen.",
-                    "description": "Creating of an issue using project keys and issue type names using the REST API",
-                    "issuetype": {
-                      "name": "Task"
-                    }
-                  }
-                };*/
+            var createNewIssue = function(issueData, callback) {
+				// Deprecated usage is contended by different sources
                 AP.require('request', function(request) {
                     request({
                         url: '/rest/api/latest/issue',
@@ -104,9 +130,10 @@
                         data: JSON.stringify(issueData),
                         success: function(response) {
                             // convert the string response to JSON
-                            // Can obtain the new issue key from the response body <- search the "key" key
                             response = JSON.parse(response);
-
+							
+							// Callback manipulation of the response body
+							callback(response);
                             // dump out the response to the console
                             console.log(response);
                         },
@@ -120,30 +147,48 @@
             };
 
             // Function used to call all other functions to perform the recursive clone
-            var recursiveClone() {
-
+            var recursiveClone(key) {
+				// Run initial query related to the parent epic to get all tasks/stories linked to the epic
+				runJqlQuery(epicLinkJql, handleQueryResponse);
+				
+				for(taskIssues in issueData.keys()) {
+					// Gets the issues linked to the issues in the epic
+					runJqlQuery(issueLinkJql, handleQueryResponse);
+				}
+				
+				while(neighborStack > 0) {
+					var cur = neighborStack.pop();
+					
+					if(issueData[cur] == false) {
+						issueData[cur] = true;
+					}
+					
+					// Post-order traversal solution
+					// Get metadata
+					// Create issue based on retrieved metadata and provide proper linking to parent issue
+				}
             };
 
-             // Function to grab the context parameters | function is anonymous so it is usually not accessible after its initial creation
-             var getUrlParam = function (param) {
-                 var codedParam = (new RegExp(param + '=([^&]*)')).exec(window.location.search)[1];
-                 return decodeURIComponent(codedParam);
-             };
+            // Function to grab the context parameters | function is anonymous so it is usually not accessible after its initial creation
+            var getUrlParam = function (param) {
+                var codedParam = (new RegExp(param + '=([^&]*)')).exec(window.location.search)[1];
+                return decodeURIComponent(codedParam);
+            };
 
-             // xdm_e is the context parameter for the host application's base URL and cp is the context path of the instance
-             var baseUrl = getUrlParam('xdm_e') + getUrlParam('cp');
-             var options = document.getElementById('connect-loader').getAttribute('data-options');
+            // xdm_e is the context parameter for the host application's base URL and cp is the context path of the instance
+            var baseUrl = getUrlParam('xdm_e') + getUrlParam('cp');
 
-             var script = document.createElement("script");
-             script.src = baseUrl + '/atlassian-connect/all.js';
+            var script = document.createElement("script");
+            script.src = baseUrl + '/atlassian-connect/all.js';
+			script.setAttribute('data-options', 'base:true');
 
-             if(options) {
-                 script.setAttribute('data-options', options);
-             }
+			// Loads up all.js
+            document.getElementsByTagName("head")[0].appendChild(script);
+			 
+			// Runs the recursive cloner
+			//recursiveClone(issueKey);
+        })();
+    </script>
 
-             document.getElementsByTagName("head")[0].appendChild(script);
-         })();
-     </script>
-
- </body>
+</body>
 </html>
