@@ -1,0 +1,24 @@
+{
+  "key": "${addon.key}",
+  "baseUrl": "${addon.base-url}",
+  "name": "Clonelink (Spring Boot)",
+  "authentication": {
+    "type": "jwt"
+  },
+  "lifecycle": {
+    "installed": "/installed",
+    "uninstalled": "/uninstalled"
+  },
+  "modules": {
+        "webItems": [
+            {
+                "url": "/index.html",
+                "key": "recursive-clone-issue-creator",
+                "location": "operations-operations",
+                "name": {
+                    "value": "Recursive Epic Cloner"
+                }
+            }
+        ]
+    }
+}
