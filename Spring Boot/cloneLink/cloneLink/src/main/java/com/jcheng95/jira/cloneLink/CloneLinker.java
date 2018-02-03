@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.atlassian.jira.web.action.JiraWebActionSupport;
 import java.util.*;
 import com.atlassian.jira.plugin.webfragment.model.JiraHelper;
 import com.atlassian.jira.issue.*;
@@ -38,15 +37,16 @@ import com.atlassian.jira.jql.builder.JqlQueryBuilder; */
   
   Author:  				Jacky Cheng
   Date Created:    		Oct. 5, 2017
-  Date Last Modified: 	Jan. 31, 2018
+  Date Last Modified: 	Feb. 2, 2018
   
  */
 
 @RestController
-public class CloneLinker extends JiraWebActionSupport
+public class CloneLinker
 {
 	// This variable is created by Jira by default but causes a compile error for a package not existing
     // private static final jdk.internal.instrumentation.Logger log = LoggerFactory.getLogger(CloneLinker.class);
+	protected Logger log;
 
     private ApplicationUser appUser;			// Currently logged-in user
     private Issue epicIssue;					// Issue currently being looked at by the logged-in user (ideally an epic)
@@ -95,11 +95,11 @@ public class CloneLinker extends JiraWebActionSupport
 			
 			for(CustomField field : allFields) {
 				Object cloneCustomFieldValue;
-				if(field == parentLink) {
-					long result = orig.getCustomFieldValue(field);
+				if(field.getIdAsLong() == parentLink) {
+					long result = orig.getCustomFieldValue(field.getIdAsLong());
 					cloneCustomFieldValue = (origToCloneMap.containsKey(result) != null) ? origToCloneMap.get(result) : result;
 				}
-				clone.setCustomFieldValue(field,cloneCustomFieldValue);
+				clone.setCustomFieldValue(field.getIdAsLong(),cloneCustomFieldValue);
 			}
 			
 			return clone;
@@ -284,10 +284,9 @@ public class CloneLinker extends JiraWebActionSupport
      * 				use of recursive vs. iterative for minimum memory usage.
      * 
      */
-    @Override
-    @RequestMapping("/index.html")
+    @RequestMapping("/index")
     // ^ is this right?
-    public String doExecute() throws Exception {
+    public String runClone() throws Exception {
     	// Using the parent class's logger variable
     	log.debug("Entering the execute method");
 		

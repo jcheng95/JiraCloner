@@ -19,6 +19,16 @@
         <java.version>1.8</java.version>
 
         <atlassian-connect-spring-boot.version>1.3.5</atlassian-connect-spring-boot.version>
+		
+		<!-- Not sure if I need this -->
+		<jira.version>7.2.2</jira.version>
+        <amps.version>6.2.11</amps.version>
+        <plugin.testrunner.version>1.2.3</plugin.testrunner.version>
+        <atlassian.spring.scanner.version>1.2.13</atlassian.spring.scanner.version>
+        <!-- This key is used to keep the consistency between the key in atlassian-plugin.xml and the key to generate bundle. -->
+        <atlassian.plugin.key>${project.groupId}.${project.artifactId}</atlassian.plugin.key>
+        <!-- TestKit version 6.x for JIRA 6.x -->
+        <testkit.version>6.3.11</testkit.version>
     </properties>
 
     <dependencies>
@@ -154,15 +164,4 @@
             </dependencies>
         </profile>
     </profiles>
-	<!-- Not sure if I need this -->
-	<properties>
-        <jira.version>7.2.2</jira.version>
-        <amps.version>6.2.11</amps.version>
-        <plugin.testrunner.version>1.2.3</plugin.testrunner.version>
-        <atlassian.spring.scanner.version>1.2.13</atlassian.spring.scanner.version>
-        <!-- This key is used to keep the consistency between the key in atlassian-plugin.xml and the key to generate bundle. -->
-        <atlassian.plugin.key>${project.groupId}.${project.artifactId}</atlassian.plugin.key>
-        <!-- TestKit version 6.x for JIRA 6.x -->
-        <testkit.version>6.3.11</testkit.version>
-    </properties>
 </project>
